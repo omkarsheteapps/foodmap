@@ -74,3 +74,29 @@ body {
 .map-ping.active {
   border-color: rgba(34, 211, 238, 0.8);
 }
+
+.map-label {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 20px);
+  transform: translate(-50%, -8px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(3, 7, 18, 0.78);
+  color: #f8fafc;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 250ms ease;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+}
+
+button:hover .map-label,
+button:focus-visible .map-label {
+  opacity: 1;
+  transform: translate(-50%, -14px);
+}

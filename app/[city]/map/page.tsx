@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { restaurants } from "@/data/mock-data";
+import { dishes, restaurants } from "@/data/mock-data";
 import CityMapCanvas from "./CityMapCanvas";
 
 export async function generateMetadata({ params }: { params: Promise<{ city: string }> }): Promise<Metadata> {
@@ -28,7 +28,7 @@ export default async function CityMapPage({ params }: { params: Promise<{ city: 
           </div>
           <Link href={`/${city}`} className="rounded-full border border-white/20 px-4 py-2 text-sm transition hover:border-amber-300">Back to city guide</Link>
         </div>
-        <CityMapCanvas city={city} restaurants={cityRestaurants} />
+        <CityMapCanvas city={city} restaurants={cityRestaurants} dishes={dishes} />
       </div>
     </main>
   );
