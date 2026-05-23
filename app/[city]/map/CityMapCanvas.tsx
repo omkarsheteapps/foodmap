@@ -15,6 +15,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
   const [viewMode, setViewMode] = useState<"hotspots" | "map">("map");
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [mapZoom, setMapZoom] = useState(1);
   const [category, setCategory] = useState("all");
   const dragStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
@@ -60,14 +61,22 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
 
   const mapEmbedUrl = useMemo(() => {
     if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng)) return null;
-    const padLat = Math.max((bounds.maxLat - bounds.minLat) * 0.25, 0.03);
-    const padLng = Math.max((bounds.maxLng - bounds.minLng) * 0.25, 0.03);
-    const left = bounds.minLng - padLng;
-    const right = bounds.maxLng + padLng;
-    const top = bounds.maxLat + padLat;
-    const bottom = bounds.minLat - padLat;
+
+    const centerLat = (bounds.minLat + bounds.maxLat) / 2;
+    const centerLng = (bounds.minLng + bounds.maxLng) / 2;
+    const baseLatSpan = Math.max((bounds.maxLat - bounds.minLat) * 1.4, 0.16);
+    const baseLngSpan = Math.max((bounds.maxLng - bounds.minLng) * 1.4, 0.2);
+    const zoomFactor = Math.pow(0.72, mapZoom - 1);
+    const latHalfSpan = (baseLatSpan * zoomFactor) / 2;
+    const lngHalfSpan = (baseLngSpan * zoomFactor) / 2;
+
+    const left = centerLng - lngHalfSpan;
+    const right = centerLng + lngHalfSpan;
+    const top = centerLat + latHalfSpan;
+    const bottom = centerLat - latHalfSpan;
+
     return `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik`;
-  }, [bounds]);
+  }, [bounds, mapZoom]);
 
   const activeRestaurant = points.find((r) => r.id === activeId) ?? points[0];
   const spotlightDishes = activeRestaurant
@@ -132,14 +141,14 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
-              <div className="map-overlay absolute inset-0">
+              <div className="pointer-events-none absolute inset-0">
                 {points.map((r, index) => (
                   <button
                     key={r.id}
                     onMouseEnter={() => setActiveId(r.id)}
                     onFocus={() => setActiveId(r.id)}
                     aria-label={`Highlight ${r.name}`}
-                    className="group absolute z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                    className="group pointer-events-auto absolute z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
                     style={{ left: `${r.x}%`, top: `${r.y}%`, animationDelay: `${index * 120}ms` }}
                   >
                     <span className={`map-ping ${activeId === r.id ? "active" : ""}`} />
@@ -198,7 +207,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
                     onMouseEnter={() => setActiveId(r.id)}
                     onFocus={() => setActiveId(r.id)}
                     aria-label={`Highlight ${r.name}`}
-                    className="group absolute z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                    className="group pointer-events-auto absolute z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
                     style={{ left: `${r.x}%`, top: `${r.y}%`, animationDelay: `${index * 120}ms` }}
                   >
                     <span className={`map-ping ${activeId === r.id ? "active" : ""}`} />
@@ -211,6 +220,12 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
           )}
 
           <div className="absolute left-4 top-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200 backdrop-blur">Live plotted hotspots</div>
+          {viewMode === "map" && (
+            <div className="absolute bottom-4 right-4 z-10 flex gap-2">
+              <button onClick={() => setMapZoom((z) => Math.min(5, z + 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
+              <button onClick={() => setMapZoom((z) => Math.max(1, z - 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">-</button>
+            </div>
+          )}
           {viewMode === "hotspots" && (
             <div className="absolute bottom-4 right-4 z-10 flex gap-2">
               <button onClick={() => updateZoom(zoom + 0.12)} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
