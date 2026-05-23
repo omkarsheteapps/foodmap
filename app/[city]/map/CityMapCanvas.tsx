@@ -63,7 +63,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
   }, [bounds, filteredRestaurants]);
 
   const mapImageUrl = useMemo(() => {
-    if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng) || !env.mapboxToken) return null;
+    if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng)) return null;
 
     const centerLat = (bounds.minLat + bounds.maxLat) / 2;
     const centerLng = (bounds.minLng + bounds.maxLng) / 2;
@@ -73,7 +73,11 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
     const baseZoom = 12.4 - Math.log2(citySpan * 95);
     const nextZoom = Math.min(16.8, Math.max(10.4, baseZoom + (mapZoom - 1) * 0.65));
 
-    return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${centerLng},${centerLat},${nextZoom.toFixed(2)},0/1600x900?access_token=${env.mapboxToken}`;
+    if (env.mapboxToken) {
+      return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${centerLng},${centerLat},${nextZoom.toFixed(2)},0/1600x900?access_token=${env.mapboxToken}`;
+    }
+
+    return `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(6)},${centerLng.toFixed(6)}&zoom=${Math.round(nextZoom)}&size=1600x900&maptype=mapnik`;
   }, [bounds, mapZoom]);
 
   const showStreetMap = viewMode === "map" && Boolean(mapImageUrl) && failedMapUrl !== mapImageUrl;
