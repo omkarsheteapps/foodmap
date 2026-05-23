@@ -227,7 +227,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
             </>
           )}
 
-          <div className="absolute left-4 top-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200 backdrop-blur">Live plotted hotspots</div>
+          <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200 backdrop-blur">Live plotted hotspots</div>
           {showStreetMap && (
             <div className="absolute bottom-4 right-4 z-10 flex gap-2">
               <button onClick={() => setMapZoom((z) => Math.min(6, z + 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
@@ -235,7 +235,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
             </div>
           )}
           {showStreetMap && (
-            <div className="absolute bottom-4 left-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200">
+            <div className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200">
               OpenStreetMap static tiles · hotspot overlays stay interactive
             </div>
           )}
