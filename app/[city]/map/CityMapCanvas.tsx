@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import type { Dish, Restaurant } from "@/lib/types";
+import { env } from "@/lib/env";
 
 type Props = {
   city: string;
@@ -59,23 +61,18 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
     });
   }, [bounds, filteredRestaurants]);
 
-  const mapEmbedUrl = useMemo(() => {
-    if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng)) return null;
+  const mapImageUrl = useMemo(() => {
+    if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng) || !env.mapboxToken) return null;
 
     const centerLat = (bounds.minLat + bounds.maxLat) / 2;
     const centerLng = (bounds.minLng + bounds.maxLng) / 2;
-    const baseLatSpan = Math.max((bounds.maxLat - bounds.minLat) * 1.4, 0.16);
-    const baseLngSpan = Math.max((bounds.maxLng - bounds.minLng) * 1.4, 0.2);
-    const zoomFactor = Math.pow(0.72, mapZoom - 1);
-    const latHalfSpan = (baseLatSpan * zoomFactor) / 2;
-    const lngHalfSpan = (baseLngSpan * zoomFactor) / 2;
+    const latSpan = Math.max(bounds.maxLat - bounds.minLat, 0.02);
+    const lngSpan = Math.max(bounds.maxLng - bounds.minLng, 0.02);
+    const citySpan = Math.max(latSpan, lngSpan);
+    const baseZoom = 12.4 - Math.log2(citySpan * 95);
+    const nextZoom = Math.min(16.8, Math.max(10.4, baseZoom + (mapZoom - 1) * 0.65));
 
-    const left = centerLng - lngHalfSpan;
-    const right = centerLng + lngHalfSpan;
-    const top = centerLat + latHalfSpan;
-    const bottom = centerLat - latHalfSpan;
-
-    return `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik`;
+    return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${centerLng},${centerLat},${nextZoom.toFixed(2)},0/1600x900?access_token=${env.mapboxToken}`;
   }, [bounds, mapZoom]);
 
   const activeRestaurant = points.find((r) => r.id === activeId) ?? points[0];
@@ -132,14 +129,15 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
         </div>
 
         <div className="map-shell relative overflow-hidden rounded-3xl border border-white/10 bg-[#080c19]">
-          {viewMode === "map" && mapEmbedUrl ? (
+          {viewMode === "map" && mapImageUrl ? (
             <div className="relative h-[65vh]">
-              <iframe
-                title={`${city} street map`}
-                src={mapEmbedUrl}
-                className="pointer-events-none h-full w-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+              <Image
+                src={mapImageUrl}
+                alt={`${city} street map`}
+                fill
+                sizes="(min-width: 1024px) 70vw, 100vw"
+                className="object-cover"
+                unoptimized
               />
               <div className="pointer-events-none absolute inset-0">
                 {points.map((r, index) => (
@@ -222,13 +220,13 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
           <div className="absolute left-4 top-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200 backdrop-blur">Live plotted hotspots</div>
           {viewMode === "map" && (
             <div className="absolute bottom-4 right-4 z-10 flex gap-2">
-              <button onClick={() => setMapZoom((z) => Math.min(5, z + 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
+              <button onClick={() => setMapZoom((z) => Math.min(6, z + 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
               <button onClick={() => setMapZoom((z) => Math.max(1, z - 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">-</button>
             </div>
           )}
           {viewMode === "map" && (
             <div className="absolute bottom-4 left-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200">
-              Map controls are locked to keep hotspots aligned
+              Zoom is constrained to the {city} city bounds
             </div>
           )}
           {viewMode === "hotspots" && (
