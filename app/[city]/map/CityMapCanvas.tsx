@@ -137,7 +137,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
               <iframe
                 title={`${city} street map`}
                 src={mapEmbedUrl}
-                className="h-full w-full border-0"
+                className="pointer-events-none h-full w-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
@@ -224,6 +224,11 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
             <div className="absolute bottom-4 right-4 z-10 flex gap-2">
               <button onClick={() => setMapZoom((z) => Math.min(5, z + 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
               <button onClick={() => setMapZoom((z) => Math.max(1, z - 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">-</button>
+            </div>
+          )}
+          {viewMode === "map" && (
+            <div className="absolute bottom-4 left-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200">
+              Map controls are locked to keep hotspots aligned
             </div>
           )}
           {viewMode === "hotspots" && (
