@@ -18,6 +18,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [mapZoom, setMapZoom] = useState(1);
+  const [failedMapUrl, setFailedMapUrl] = useState<string | null>(null);
   const [category, setCategory] = useState("all");
   const dragStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
@@ -75,6 +76,9 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
     return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${centerLng},${centerLat},${nextZoom.toFixed(2)},0/1600x900?access_token=${env.mapboxToken}`;
   }, [bounds, mapZoom]);
 
+  const showStreetMap = viewMode === "map" && Boolean(mapImageUrl) && failedMapUrl !== mapImageUrl;
+
+
   const activeRestaurant = points.find((r) => r.id === activeId) ?? points[0];
   const spotlightDishes = activeRestaurant
     ? dishes.filter((dish) => dish.restaurantSlug === activeRestaurant.slug).slice(0, 2)
@@ -129,7 +133,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
         </div>
 
         <div className="map-shell relative overflow-hidden rounded-3xl border border-white/10 bg-[#080c19]">
-          {viewMode === "map" && mapImageUrl ? (
+          {showStreetMap ? (
             <div className="relative h-[65vh]">
               <Image
                 src={mapImageUrl}
@@ -138,6 +142,8 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
                 sizes="(min-width: 1024px) 70vw, 100vw"
                 className="object-cover"
                 unoptimized
+                onError={() => setFailedMapUrl(mapImageUrl)}
+                onLoad={() => setFailedMapUrl(null)}
               />
               <div className="pointer-events-none absolute inset-0">
                 {points.map((r, index) => (
@@ -218,13 +224,13 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
           )}
 
           <div className="absolute left-4 top-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200 backdrop-blur">Live plotted hotspots</div>
-          {viewMode === "map" && (
+          {showStreetMap && (
             <div className="absolute bottom-4 right-4 z-10 flex gap-2">
               <button onClick={() => setMapZoom((z) => Math.min(6, z + 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
               <button onClick={() => setMapZoom((z) => Math.max(1, z - 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">-</button>
             </div>
           )}
-          {viewMode === "map" && (
+          {showStreetMap && (
             <div className="absolute bottom-4 left-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200">
               Zoom is constrained to the {city} city bounds
             </div>
