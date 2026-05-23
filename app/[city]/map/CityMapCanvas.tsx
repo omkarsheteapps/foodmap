@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import type { Dish, Restaurant } from "@/lib/types";
-import { env } from "@/lib/env";
 
 type Props = {
   city: string;
@@ -17,7 +16,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [mapZoom, setMapZoom] = useState(1);
-  const [failedMapUrl, setFailedMapUrl] = useState<string | null>(null);
+  const [failedMapIndex, setFailedMapIndex] = useState(0);
   const [category, setCategory] = useState("all");
   const dragStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
@@ -61,29 +60,30 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
     });
   }, [bounds, filteredRestaurants]);
 
-  const mapImageUrl = useMemo(() => {
-    if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng)) return null;
+  const mapImageUrls = useMemo(() => {
+    if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng)) return [];
 
     const centerLat = (bounds.minLat + bounds.maxLat) / 2;
     const centerLng = (bounds.minLng + bounds.maxLng) / 2;
     const latSpan = Math.max(bounds.maxLat - bounds.minLat, 0.02);
     const lngSpan = Math.max(bounds.maxLng - bounds.minLng, 0.02);
     const citySpan = Math.max(latSpan, lngSpan);
-    const baseZoom = 12.4 - Math.log2(citySpan * 95);
-    const nextZoom = Math.min(16.8, Math.max(10.4, baseZoom + (mapZoom - 1) * 0.65));
+    const nextZoom = Math.round(Math.min(16.8, Math.max(10.4, 12.4 - Math.log2(citySpan * 95) + (mapZoom - 1) * 0.65)));
 
-    if (env.mapboxToken) {
-      const markerSegment = filteredRestaurants
-        .map((restaurant) => `pin-s+ef4444(${restaurant.longitude},${restaurant.latitude})`)
-        .join(",");
+    const markerParams = filteredRestaurants
+      .map((restaurant) => `markers=${restaurant.latitude.toFixed(6)},${restaurant.longitude.toFixed(6)},lightblue1`)
+      .join("&");
 
-      return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${markerSegment}/${centerLng},${centerLat},${nextZoom.toFixed(2)},0/1600x900?access_token=${env.mapboxToken}`;
-    }
-
-    return `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(6)},${centerLng.toFixed(6)}&zoom=${Math.round(nextZoom)}&size=1600x900&maptype=mapnik`;
+    return [
+      `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(6)},${centerLng.toFixed(6)}&zoom=${nextZoom}&size=1600x900&maptype=mapnik&${markerParams}`,
+      `https://staticmap.openstreetmap.fr/?center=${centerLat.toFixed(6)},${centerLng.toFixed(6)}&zoom=${nextZoom}&size=1600x900&maptype=mapnik&${markerParams}`,
+    ];
   }, [bounds, filteredRestaurants, mapZoom]);
 
-  const showStreetMap = viewMode === "map" && Boolean(mapImageUrl) && failedMapUrl !== mapImageUrl;
+
+  const activeMapIndex = Math.min(failedMapIndex, Math.max(0, mapImageUrls.length - 1));
+  const mapImageUrl = mapImageUrls[activeMapIndex] ?? null;
+  const showStreetMap = viewMode === "map" && Boolean(mapImageUrl);
 
 
   const activeRestaurant = points.find((r) => r.id === activeId) ?? points[0];
@@ -146,8 +146,8 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
                 src={mapImageUrl}
                 alt={`${city} street map`}
                 className="h-full w-full object-cover"
-                onError={() => setFailedMapUrl(mapImageUrl)}
-                onLoad={() => setFailedMapUrl(null)}
+                onError={() => setFailedMapIndex((idx) => Math.min(idx + 1, mapImageUrls.length))}
+                onLoad={() => setFailedMapIndex((idx) => idx)}
               />
               <div className="pointer-events-none absolute inset-0">
                 {points.map((r, index) => (
@@ -236,7 +236,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
           )}
           {showStreetMap && (
             <div className="absolute bottom-4 left-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200">
-              Zoom is constrained to the {city} city bounds
+              OpenStreetMap static tiles · hotspot overlays stay interactive
             </div>
           )}
           {viewMode === "hotspots" && (
