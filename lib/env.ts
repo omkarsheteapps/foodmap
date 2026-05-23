@@ -2,7 +2,6 @@ const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"] a
 
 export const env = {
   enablePayments: process.env.NEXT_PUBLIC_ENABLE_PAYMENTS === "true",
-  mapboxToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
   razorpayKeyId: process.env.RAZORPAY_KEY_ID,
 };
 
