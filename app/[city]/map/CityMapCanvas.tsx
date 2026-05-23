@@ -11,22 +11,28 @@ type Props = {
 };
 
 export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
-  const [activeId, setActiveId] = useState(restaurants[0]?.id ?? 0);
+  const cityRestaurants = useMemo(
+    () => restaurants.filter((restaurant) => restaurant.citySlug === city),
+    [city, restaurants],
+  );
+
+  const [activeId, setActiveId] = useState(cityRestaurants[0]?.id ?? 0);
 
   const [category, setCategory] = useState("all");
 
   const categoryOptions = useMemo(
-    () => ["all", ...new Set(restaurants.flatMap((r) => r.categories))],
-    [restaurants],
+    () => ["all", ...new Set(cityRestaurants.flatMap((r) => r.categories))],
+    [cityRestaurants],
   );
 
   const filteredRestaurants = useMemo(
     () =>
       category === "all"
-        ? restaurants
-        : restaurants.filter((restaurant) => restaurant.categories.includes(category)),
-    [category, restaurants],
+        ? cityRestaurants
+        : cityRestaurants.filter((restaurant) => restaurant.categories.includes(category)),
+    [category, cityRestaurants],
   );
+
 
   const bounds = useMemo(() => {
     const lats = filteredRestaurants.map((r) => r.latitude);
