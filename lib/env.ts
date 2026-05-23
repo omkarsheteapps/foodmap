@@ -1,10 +1,12 @@
-const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "MAPBOX_ACCESS_TOKEN"] as const;
+const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"] as const;
+
 export const env = {
   enablePayments: process.env.NEXT_PUBLIC_ENABLE_PAYMENTS === "true",
+  mapboxToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
   razorpayKeyId: process.env.RAZORPAY_KEY_ID,
 };
 
 export function validateEnv() {
-  const missing = required.filter((k) => !process.env[k]);
+  const missing = required.filter((key) => !process.env[key]);
   if (missing.length) throw new Error(`Missing env: ${missing.join(", ")}`);
 }
