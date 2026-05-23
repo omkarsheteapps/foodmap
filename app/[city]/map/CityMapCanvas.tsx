@@ -41,15 +41,21 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
     };
   }, [filteredRestaurants]);
 
-  const points = useMemo(
-    () =>
-      filteredRestaurants.map((r) => {
-        const x = ((r.longitude - bounds.minLng) / Math.max(bounds.maxLng - bounds.minLng, 0.001)) * 100;
-        const y = (1 - (r.latitude - bounds.minLat) / Math.max(bounds.maxLat - bounds.minLat, 0.001)) * 100;
-        return { ...r, x, y };
-      }),
-    [bounds, filteredRestaurants],
-  );
+  const points = useMemo(() => {
+    const MAP_PADDING = 8;
+    const usableArea = 100 - MAP_PADDING * 2;
+
+    return filteredRestaurants.map((r) => {
+      const normalizedX = (r.longitude - bounds.minLng) / Math.max(bounds.maxLng - bounds.minLng, 0.001);
+      const normalizedY = 1 - (r.latitude - bounds.minLat) / Math.max(bounds.maxLat - bounds.minLat, 0.001);
+
+      return {
+        ...r,
+        x: MAP_PADDING + normalizedX * usableArea,
+        y: MAP_PADDING + normalizedY * usableArea,
+      };
+    });
+  }, [bounds, filteredRestaurants]);
 
   const activeRestaurant = points.find((r) => r.id === activeId) ?? points[0];
   const spotlightDishes = activeRestaurant
