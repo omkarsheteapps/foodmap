@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import type { Dish, Restaurant } from "@/lib/types";
 import { env } from "@/lib/env";
@@ -74,11 +73,15 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
     const nextZoom = Math.min(16.8, Math.max(10.4, baseZoom + (mapZoom - 1) * 0.65));
 
     if (env.mapboxToken) {
-      return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${centerLng},${centerLat},${nextZoom.toFixed(2)},0/1600x900?access_token=${env.mapboxToken}`;
+      const markerSegment = filteredRestaurants
+        .map((restaurant) => `pin-s+ef4444(${restaurant.longitude},${restaurant.latitude})`)
+        .join(",");
+
+      return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${markerSegment}/${centerLng},${centerLat},${nextZoom.toFixed(2)},0/1600x900?access_token=${env.mapboxToken}`;
     }
 
     return `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(6)},${centerLng.toFixed(6)}&zoom=${Math.round(nextZoom)}&size=1600x900&maptype=mapnik`;
-  }, [bounds, mapZoom]);
+  }, [bounds, filteredRestaurants, mapZoom]);
 
   const showStreetMap = viewMode === "map" && Boolean(mapImageUrl) && failedMapUrl !== mapImageUrl;
 
@@ -139,13 +142,10 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
         <div className="map-shell relative overflow-hidden rounded-3xl border border-white/10 bg-[#080c19]">
           {showStreetMap ? (
             <div className="relative h-[65vh]">
-              <Image
+              <img
                 src={mapImageUrl}
                 alt={`${city} street map`}
-                fill
-                sizes="(min-width: 1024px) 70vw, 100vw"
-                className="object-cover"
-                unoptimized
+                className="h-full w-full object-cover"
                 onError={() => setFailedMapUrl(mapImageUrl)}
                 onLoad={() => setFailedMapUrl(null)}
               />
