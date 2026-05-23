@@ -83,7 +83,8 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
                 key={r.id}
                 onMouseEnter={() => setActiveId(r.id)}
                 onFocus={() => setActiveId(r.id)}
-                className="group absolute -translate-x-1/2 -translate-y-1/2"
+                aria-label={`Highlight ${r.name}`}
+                className="group absolute z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
                 style={{ left: `${r.x}%`, top: `${r.y}%`, animationDelay: `${index * 120}ms` }}
               >
                 <span className={`map-ping ${activeId === r.id ? "active" : ""}`} />
