@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Dish, Restaurant } from "@/lib/types";
 
 type Props = {
@@ -13,7 +13,9 @@ type Props = {
 export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
   const [activeId, setActiveId] = useState(restaurants[0]?.id ?? 0);
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [category, setCategory] = useState("all");
+  const dragStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
   const categoryOptions = useMemo(
     () => ["all", ...new Set(restaurants.flatMap((r) => r.categories))],
@@ -54,6 +56,21 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
     ? dishes.filter((dish) => dish.restaurantSlug === activeRestaurant.slug).slice(0, 2)
     : [];
 
+  const clampPan = (nextX: number, nextY: number, nextZoom: number) => {
+    const maxOffsetX = ((nextZoom - 1) * 100) / 2;
+    const maxOffsetY = ((nextZoom - 1) * 65) / 2;
+    return {
+      x: Math.min(maxOffsetX, Math.max(-maxOffsetX, nextX)),
+      y: Math.min(maxOffsetY, Math.max(-maxOffsetY, nextY)),
+    };
+  };
+
+  const updateZoom = (nextZoom: number) => {
+    const clampedZoom = Math.max(1, Math.min(2.4, nextZoom));
+    setZoom(clampedZoom);
+    setPan((prev) => clampPan(prev.x, prev.y, clampedZoom));
+  };
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       <div className="space-y-4">
@@ -77,7 +94,44 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_5%,rgba(245,158,11,0.22),transparent_30%),radial-gradient(circle_at_85%_85%,rgba(34,211,238,0.25),transparent_40%)]" />
           <div className="pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:44px_44px]" />
 
-          <div className="relative h-[65vh] overflow-hidden" style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}>
+          <div
+            className="relative h-[65vh] overflow-hidden"
+            onWheel={(event) => {
+              event.preventDefault();
+              const delta = event.deltaY > 0 ? -0.08 : 0.08;
+              updateZoom(zoom + delta);
+            }}
+            onPointerDown={(event) => {
+              if (zoom <= 1) return;
+              event.currentTarget.setPointerCapture(event.pointerId);
+              dragStartRef.current = {
+                x: event.clientX,
+                y: event.clientY,
+                panX: pan.x,
+                panY: pan.y,
+              };
+            }}
+            onPointerMove={(event) => {
+              if (!dragStartRef.current || zoom <= 1) return;
+              const nextX = dragStartRef.current.panX + (event.clientX - dragStartRef.current.x) / 8;
+              const nextY = dragStartRef.current.panY + (event.clientY - dragStartRef.current.y) / 8;
+              setPan(clampPan(nextX, nextY, zoom));
+            }}
+            onPointerUp={(event) => {
+              dragStartRef.current = null;
+              event.currentTarget.releasePointerCapture(event.pointerId);
+            }}
+            onPointerCancel={(event) => {
+              dragStartRef.current = null;
+              event.currentTarget.releasePointerCapture(event.pointerId);
+            }}
+            style={{
+              transform: `translate(${pan.x}%, ${pan.y}%) scale(${zoom})`,
+              transformOrigin: "center",
+              cursor: zoom > 1 ? "grab" : "default",
+              touchAction: "none",
+            }}
+          >
             {points.map((r, index) => (
               <button
                 key={r.id}
@@ -96,8 +150,8 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
 
           <div className="absolute left-4 top-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200 backdrop-blur">Live plotted hotspots</div>
           <div className="absolute bottom-4 right-4 z-10 flex gap-2">
-            <button onClick={() => setZoom((z) => Math.min(1.8, z + 0.1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
-            <button onClick={() => setZoom((z) => Math.max(1, z - 0.1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">-</button>
+            <button onClick={() => updateZoom(zoom + 0.12)} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
+            <button onClick={() => updateZoom(zoom - 0.12)} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">-</button>
           </div>
         </div>
       </div>
