@@ -35,6 +35,8 @@ body {
 .animate-in { animation: slideUp 0.7s ease-out both; }
 .glow-pulse { animation: pulseGlow 2.5s ease-in-out infinite; }
 .map-shell iframe { filter: saturate(1.12) contrast(1.05); }
+.map-overlay { pointer-events: none; }
+.map-overlay button { pointer-events: auto; }
 
 @keyframes pingRing {
   0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.95; }
@@ -69,6 +71,11 @@ body {
 .map-dot.active {
   background: #22d3ee;
   box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.24);
+}
+
+.group:hover .map-dot,
+.group:focus-visible .map-dot {
+  transform: translate(-50%, -50%) scale(1.18);
 }
 
 .map-ping.active {

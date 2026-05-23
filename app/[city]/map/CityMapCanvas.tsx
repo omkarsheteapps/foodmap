@@ -124,13 +124,31 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
 
         <div className="map-shell relative overflow-hidden rounded-3xl border border-white/10 bg-[#080c19]">
           {viewMode === "map" && mapEmbedUrl ? (
-            <iframe
-              title={`${city} street map`}
-              src={mapEmbedUrl}
-              className="h-[65vh] w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
+            <div className="relative h-[65vh]">
+              <iframe
+                title={`${city} street map`}
+                src={mapEmbedUrl}
+                className="h-full w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+              <div className="map-overlay absolute inset-0">
+                {points.map((r, index) => (
+                  <button
+                    key={r.id}
+                    onMouseEnter={() => setActiveId(r.id)}
+                    onFocus={() => setActiveId(r.id)}
+                    aria-label={`Highlight ${r.name}`}
+                    className="group absolute z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                    style={{ left: `${r.x}%`, top: `${r.y}%`, animationDelay: `${index * 120}ms` }}
+                  >
+                    <span className={`map-ping ${activeId === r.id ? "active" : ""}`} />
+                    <span className={`map-dot ${activeId === r.id ? "active" : ""}`} />
+                    <span className="map-label">{r.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : (
             <>
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_5%,rgba(245,158,11,0.22),transparent_30%),radial-gradient(circle_at_85%_85%,rgba(34,211,238,0.25),transparent_40%)]" />
