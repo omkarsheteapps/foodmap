@@ -15,8 +15,6 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
   const [viewMode, setViewMode] = useState<"hotspots" | "map">("map");
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [mapZoom, setMapZoom] = useState(1);
-  const [failedMapIndex, setFailedMapIndex] = useState(0);
   const [category, setCategory] = useState("all");
   const dragStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
@@ -60,30 +58,21 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
     });
   }, [bounds, filteredRestaurants]);
 
-  const mapImageUrls = useMemo(() => {
-    if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng)) return [];
+  const mapEmbedUrl = useMemo(() => {
+    if (!Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.minLng) || filteredRestaurants.length === 0) return null;
 
-    const centerLat = (bounds.minLat + bounds.maxLat) / 2;
-    const centerLng = (bounds.minLng + bounds.maxLng) / 2;
-    const latSpan = Math.max(bounds.maxLat - bounds.minLat, 0.02);
-    const lngSpan = Math.max(bounds.maxLng - bounds.minLng, 0.02);
-    const citySpan = Math.max(latSpan, lngSpan);
-    const nextZoom = Math.round(Math.min(16.8, Math.max(10.4, 12.4 - Math.log2(citySpan * 95) + (mapZoom - 1) * 0.65)));
+    const latPad = Math.max((bounds.maxLat - bounds.minLat) * 0.22, 0.015);
+    const lngPad = Math.max((bounds.maxLng - bounds.minLng) * 0.22, 0.015);
+    const west = (bounds.minLng - lngPad).toFixed(6);
+    const south = (bounds.minLat - latPad).toFixed(6);
+    const east = (bounds.maxLng + lngPad).toFixed(6);
+    const north = (bounds.maxLat + latPad).toFixed(6);
+    const focus = filteredRestaurants[0];
 
-    const markerParams = filteredRestaurants
-      .map((restaurant) => `markers=${restaurant.latitude.toFixed(6)},${restaurant.longitude.toFixed(6)},lightblue1`)
-      .join("&");
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${west}%2C${south}%2C${east}%2C${north}&layer=mapnik&marker=${focus.latitude.toFixed(6)}%2C${focus.longitude.toFixed(6)}`;
+  }, [bounds, filteredRestaurants]);
 
-    return [
-      `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(6)},${centerLng.toFixed(6)}&zoom=${nextZoom}&size=1600x900&maptype=mapnik&${markerParams}`,
-      `https://staticmap.openstreetmap.fr/?center=${centerLat.toFixed(6)},${centerLng.toFixed(6)}&zoom=${nextZoom}&size=1600x900&maptype=mapnik&${markerParams}`,
-    ];
-  }, [bounds, filteredRestaurants, mapZoom]);
-
-
-  const activeMapIndex = Math.min(failedMapIndex, Math.max(0, mapImageUrls.length - 1));
-  const mapImageUrl = mapImageUrls[activeMapIndex] ?? null;
-  const showStreetMap = viewMode === "map" && Boolean(mapImageUrl);
+  const showStreetMap = viewMode === "map" && Boolean(mapEmbedUrl);
 
 
   const activeRestaurant = points.find((r) => r.id === activeId) ?? points[0];
@@ -142,12 +131,12 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
         <div className="map-shell relative overflow-hidden rounded-3xl border border-white/10 bg-[#080c19]">
           {showStreetMap ? (
             <div className="relative h-[65vh]">
-              <img
-                src={mapImageUrl}
-                alt={`${city} street map`}
-                className="h-full w-full object-cover"
-                onError={() => setFailedMapIndex((idx) => Math.min(idx + 1, mapImageUrls.length))}
-                onLoad={() => setFailedMapIndex((idx) => idx)}
+              <iframe
+                title={`${city} street map`}
+                src={mapEmbedUrl ?? undefined}
+                className="h-full w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
               />
               <div className="pointer-events-none absolute inset-0">
                 {points.map((r, index) => (
@@ -228,15 +217,9 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
           )}
 
           <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200 backdrop-blur">Live plotted hotspots</div>
-          {showStreetMap && (
-            <div className="absolute bottom-4 right-4 z-10 flex gap-2">
-              <button onClick={() => setMapZoom((z) => Math.min(6, z + 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">+</button>
-              <button onClick={() => setMapZoom((z) => Math.max(1, z - 1))} className="rounded-full border border-white/20 bg-black/55 px-3 py-1 text-sm">-</button>
-            </div>
-          )}
-          {showStreetMap && (
+                    {showStreetMap && (
             <div className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-xs text-zinc-200">
-              OpenStreetMap static tiles · hotspot overlays stay interactive
+              OpenStreetMap live embed · hotspot overlays stay interactive
             </div>
           )}
           {viewMode === "hotspots" && (
