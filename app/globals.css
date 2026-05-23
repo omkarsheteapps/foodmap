@@ -35,3 +35,42 @@ body {
 .animate-in { animation: slideUp 0.7s ease-out both; }
 .glow-pulse { animation: pulseGlow 2.5s ease-in-out infinite; }
 .map-shell iframe { filter: saturate(1.12) contrast(1.05); }
+
+@keyframes pingRing {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.95; }
+  70% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+}
+
+.map-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  background: #fbbf24;
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2);
+  transition: all 200ms ease;
+}
+
+.map-ping {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(251, 191, 36, 0.7);
+  animation: pingRing 2.2s ease-out infinite;
+}
+
+.map-dot.active {
+  background: #22d3ee;
+  box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.24);
+}
+
+.map-ping.active {
+  border-color: rgba(34, 211, 238, 0.8);
+}
