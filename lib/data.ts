@@ -1,4 +1,5 @@
 import type { City, Dish, Restaurant } from "@/lib/types";
+import { brand } from "@/lib/brand";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -42,6 +43,14 @@ type RestaurantRow = {
   verified: boolean;
   timings: string | null;
   hero_image: string | null;
+  brand_story: string | null;
+  phone: string | null;
+  website_url: string | null;
+  instagram_url: string | null;
+  reservation_url: string | null;
+  google_maps_url: string | null;
+  gallery_images: string[] | null;
+  highlights: string[] | null;
   city: { slug: string } | null;
   restaurant_categories: Array<{ category: { slug: string } | null }>;
 };
@@ -55,6 +64,7 @@ type DishRow = {
   category: string;
   tags: string[];
   featured: boolean;
+  display_order: number | null;
   restaurant: { slug: string } | null;
 };
 
@@ -77,13 +87,15 @@ export async function getCities(): Promise<City[]> {
     state: row.state,
     country: row.country,
     heroImage: row.hero_image ?? "",
-    seoTitle: row.seo_title ?? `Best dishes in ${row.name} | CraveMap`,
-    seoDescription: row.seo_description ?? `Discover ${row.name}'s best signature dishes and hidden gems.`,
+    seoTitle: row.seo_title ?? `Best Restaurants and Signature Dishes in ${row.name}`,
+    seoDescription:
+      row.seo_description ??
+      `Explore ${row.name}'s essential restaurants, famous local dishes, and verified food spots on ${brand.name}.`,
   }));
 }
 
 export async function getRestaurants(): Promise<Restaurant[]> {
-  const rows = await querySupabase<RestaurantRow>("restaurants?select=id,name,slug,description,address,latitude,longitude,cuisine_type,price_category,featured,verified,timings,hero_image,city:cities(slug),restaurant_categories(category:categories(slug))&order=id.asc");
+  const rows = await querySupabase<RestaurantRow>("restaurants?select=id,name,slug,description,address,latitude,longitude,cuisine_type,price_category,featured,verified,timings,hero_image,brand_story,phone,website_url,instagram_url,reservation_url,google_maps_url,gallery_images,highlights,city:cities(slug),restaurant_categories(category:categories(slug))&order=id.asc");
 
   return rows.map((row) => ({
     id: row.id,
@@ -100,12 +112,20 @@ export async function getRestaurants(): Promise<Restaurant[]> {
     verified: row.verified,
     timings: row.timings ?? "",
     heroImage: row.hero_image ?? "",
+    brandStory: row.brand_story ?? "",
+    phone: row.phone ?? "",
+    websiteUrl: row.website_url ?? "",
+    instagramUrl: row.instagram_url ?? "",
+    reservationUrl: row.reservation_url ?? "",
+    googleMapsUrl: row.google_maps_url ?? "",
+    galleryImages: row.gallery_images ?? [],
+    highlights: row.highlights ?? [],
     categories: row.restaurant_categories.map((item) => item.category?.slug).filter((value): value is string => Boolean(value)),
   }));
 }
 
 export async function getDishes(): Promise<Dish[]> {
-  const rows = await querySupabase<DishRow>("signature_dishes?select=id,name,slug,description,image,category,tags,featured,restaurant:restaurants(slug)&order=id.asc");
+  const rows = await querySupabase<DishRow>("signature_dishes?select=id,name,slug,description,image,category,tags,featured,display_order,restaurant:restaurants(slug)&order=display_order.asc.nullslast,id.asc");
 
   return rows.map((row) => ({
     id: row.id,
@@ -117,6 +137,7 @@ export async function getDishes(): Promise<Dish[]> {
     category: row.category,
     tags: row.tags ?? [],
     featured: row.featured,
+    displayOrder: row.display_order ?? 0,
   }));
 }
 

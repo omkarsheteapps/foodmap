@@ -1,12 +1,12 @@
--- Seed data for CraveMap MVP
+-- Seed data for Hidden Plates MVP
 -- Run this in Supabase SQL Editor after db/migrations/001_init.sql
 
 -- Cities
 insert into cities (name, slug, state, country, hero_image, seo_title, seo_description)
 values
-  ('Pune', 'pune', 'Maharashtra', 'India', 'https://images.unsplash.com/photo-1590845947670-c009801ffa74', 'Best dishes in Pune | CraveMap', 'Discover Pune''s best signature dishes and hidden gems.'),
-  ('Mumbai', 'mumbai', 'Maharashtra', 'India', 'https://images.unsplash.com/photo-1566552881560-0be862a7c445', 'Best dishes in Mumbai | CraveMap', 'Explore iconic Mumbai food experiences.'),
-  ('Bangalore', 'bangalore', 'Karnataka', 'India', 'https://images.unsplash.com/photo-1588416499018-d00dc4063903', 'Best dishes in Bangalore | CraveMap', 'Find top cafes, pizza, bowls and more in Bangalore.')
+  ('Pune', 'pune', 'Maharashtra', 'India', 'https://images.unsplash.com/photo-1590845947670-c009801ffa74', 'Best signature dishes in Pune | Hidden Plates', 'Discover Pune''s trusted restaurants, underrated spots, signature dishes, and local food stories.'),
+  ('Mumbai', 'mumbai', 'Maharashtra', 'India', 'https://images.unsplash.com/photo-1566552881560-0be862a7c445', 'Best signature dishes in Mumbai | Hidden Plates', 'Explore iconic Mumbai food experiences, underrated local plates, and mapped picks.'),
+  ('Bangalore', 'bangalore', 'Karnataka', 'India', 'https://images.unsplash.com/photo-1588416499018-d00dc4063903', 'Best signature dishes in Bangalore | Hidden Plates', 'Find top cafes, pizza, bowls, underrated kitchens, and local food stories in Bangalore.')
 on conflict (slug) do update set
   name = excluded.name,
   state = excluded.state,

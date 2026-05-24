@@ -1,6 +1,6 @@
-# CraveMap MVP
+# Hidden Plates MVP
 
-CraveMap is a dish-first, multi-city food discovery MVP built with Next.js App Router.
+Hidden Plates is a dish-first, city-by-city food discovery MVP built with Next.js App Router. The product direction is a premium, cinematic guide to signature dishes, underrated restaurants, verified food spots, and mapped local food stories across India.
 
 ## Current implementation status
 
@@ -32,9 +32,9 @@ This repository already includes a **solid scaffold**, but it is **not fully com
 - More complete seed data and richer city/category editorial content.
 - Full test and quality gates (typecheck, lint strictness, e2e).
 
-## Why you currently do not see maps
+## Why the current map is still lightweight
 
-Map UI is not yet wired to Mapbox in the current scaffold, and there is no populated token in local env by default.
+The current map experience uses an embedded OpenStreetMap view with custom restaurant points. Full Mapbox clustering, advanced filters, and richer map interactions are still planned.
 
 ## Accounts you should create (or prepare)
 

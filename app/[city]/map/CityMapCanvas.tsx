@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { titleCaseSlug } from "@/lib/brand";
 import type { Dish, Restaurant } from "@/lib/types";
 
 type Props = {
@@ -144,7 +145,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
           ))}
         </div>
 
-        <div className="map-shell relative h-[65vh] overflow-hidden rounded-3xl border border-white/10 bg-[#080c19]">
+        <div className="map-shell reveal-soft relative h-[65vh] overflow-hidden rounded-3xl border border-white/10 bg-[#080c19]">
           {mapEmbedUrl ? (
             <iframe
               key={
@@ -208,14 +209,14 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
 
       <aside className="relative z-50 space-y-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm backdrop-blur">
-          {city} plotted restaurants:{" "}
+          {titleCaseSlug(city)} mapped restaurants:{" "}
           <span className="rounded-full bg-amber-400/20 px-2 py-1 text-amber-200">
             {filteredRestaurants.length}
           </span>
         </div>
 
         {selectedRestaurant ? (
-          <div className="rounded-2xl border border-cyan-300/35 bg-cyan-300/10 p-4">
+          <div className="reveal-soft rounded-2xl border border-cyan-300/35 bg-cyan-300/10 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">
               Selected restaurant
             </p>
@@ -225,7 +226,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
             </h3>
 
             <p className="mt-1 text-sm text-zinc-200">
-              {selectedRestaurant.cuisineType} · {selectedRestaurant.timings}
+              {selectedRestaurant.cuisineType} - {selectedRestaurant.timings}
             </p>
 
             <div className="mt-3 flex flex-wrap gap-2">
@@ -248,15 +249,15 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
             </button>
           </div>
         ) : (
-          <div className="rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4">
+          <div className="reveal-soft rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-amber-200">
               Overview mode
             </p>
             <h3 className="mt-1 text-xl font-semibold">
-              All restaurants visible
+              City guide overview
             </h3>
             <p className="mt-1 text-sm text-zinc-300">
-              Click a dot or use Show on map to focus one restaurant.
+              Select a point or use Show on map to focus one restaurant.
             </p>
           </div>
         )}
@@ -267,7 +268,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
           return (
             <div
               key={restaurant.slug}
-              className={`rounded-2xl border p-4 transition ${
+              className={`lift-card reveal-soft rounded-2xl border p-4 transition ${
                 isActive
                   ? "border-amber-300/60 bg-amber-300/10"
                   : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
@@ -289,7 +290,7 @@ export default function CityMapCanvas({ city, restaurants, dishes }: Props) {
                 </div>
 
                 <p className="mt-2 text-sm text-zinc-300">
-                  {restaurant.cuisineType} · {restaurant.priceCategory}
+                  {restaurant.cuisineType} - {restaurant.priceCategory}
                 </p>
 
                 <p className="mt-1 text-xs text-zinc-400">

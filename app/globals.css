@@ -14,6 +14,14 @@ body {
   background: radial-gradient(circle at top, #131827 0%, #06070b 45%, #030303 100%);
 }
 
+img {
+  max-width: 100%;
+}
+
+::selection {
+  background: rgba(251, 191, 36, 0.35);
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -29,12 +37,56 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes softReveal {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes mapBreathe {
+  0%, 100% { transform: scale(1); filter: saturate(1.08) contrast(1.04); }
+  50% { transform: scale(1.012); filter: saturate(1.18) contrast(1.08); }
+}
+
+@keyframes shimmerLine {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
 .float-card { animation: float 6s ease-in-out infinite; }
 .float-card.delay { animation-delay: 1.3s; }
 .float-card.delay-2 { animation-delay: 2.4s; }
 .animate-in { animation: slideUp 0.7s ease-out both; }
+.reveal-soft { animation: softReveal 0.75s ease-out both; }
+.delay-1 { animation-delay: 0.08s; }
+.delay-2 { animation-delay: 0.16s; }
+.delay-3 { animation-delay: 0.24s; }
+.delay-4 { animation-delay: 0.32s; }
 .glow-pulse { animation: pulseGlow 2.5s ease-in-out infinite; }
-.map-shell iframe { filter: saturate(1.12) contrast(1.05); }
+.lift-card {
+  transition: transform 220ms ease, border-color 220ms ease, background 220ms ease, box-shadow 220ms ease;
+}
+.lift-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+}
+.shimmer-top {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-top::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.8), transparent);
+  animation: shimmerLine 3.8s ease-in-out infinite;
+}
+.map-shell iframe {
+  animation: mapBreathe 9s ease-in-out infinite;
+  filter: saturate(1.12) contrast(1.05);
+}
 .map-overlay { pointer-events: none; }
 .map-overlay button { pointer-events: auto; }
 
@@ -106,4 +158,30 @@ button:hover .map-label,
 button:focus-visible .map-label {
   opacity: 1;
   transform: translate(-50%, -14px);
+}
+
+.cinematic-shell {
+  background:
+    radial-gradient(circle at 15% 8%, rgba(245, 158, 11, 0.16), transparent 30%),
+    radial-gradient(circle at 84% 18%, rgba(34, 211, 238, 0.12), transparent 28%),
+    linear-gradient(180deg, #05060a 0%, #08080d 50%, #030303 100%);
+}
+
+.dish-card-image {
+  transition: transform 700ms ease, filter 700ms ease;
+}
+
+.lift-card:hover .dish-card-image {
+  transform: scale(1.06);
+  filter: saturate(1.16) contrast(1.06);
+}
+
+@media (max-width: 640px) {
+  .mobile-edge {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
 }

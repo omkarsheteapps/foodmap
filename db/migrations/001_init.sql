@@ -25,6 +25,14 @@ create table if not exists restaurants (
   verified boolean not null default false,
   timings text,
   hero_image text,
+  brand_story text,
+  phone text,
+  website_url text,
+  instagram_url text,
+  reservation_url text,
+  google_maps_url text,
+  gallery_images text[] not null default '{}',
+  highlights text[] not null default '{}',
   created_at timestamptz not null default now(),
   unique(city_id, slug)
 );
@@ -39,6 +47,7 @@ create table if not exists signature_dishes (
   category text not null,
   tags text[] not null default '{}',
   featured boolean not null default false,
+  display_order integer not null default 0,
   created_at timestamptz not null default now(),
   unique(restaurant_id, slug)
 );
@@ -85,3 +94,15 @@ create table if not exists submissions (
   status text not null default 'pending',
   created_at timestamptz not null default now()
 );
+
+create table if not exists site_visits (
+  id bigserial primary key,
+  path text not null default '/',
+  referrer text,
+  user_agent text,
+  ip_address text,
+  visited_at timestamptz not null default now()
+);
+
+create index if not exists site_visits_visited_at_idx on site_visits (visited_at desc);
+create index if not exists site_visits_path_idx on site_visits (path);

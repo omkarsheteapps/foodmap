@@ -24,6 +24,14 @@ export type Restaurant = {
   verified: boolean;
   timings: string;
   heroImage: string;
+  brandStory: string;
+  phone: string;
+  websiteUrl: string;
+  instagramUrl: string;
+  reservationUrl: string;
+  googleMapsUrl: string;
+  galleryImages: string[];
+  highlights: string[];
   categories: string[];
 };
 
@@ -37,4 +45,5 @@ export type Dish = {
   category: string;
   tags: string[];
   featured: boolean;
+  displayOrder: number;
 };
