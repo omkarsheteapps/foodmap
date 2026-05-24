@@ -3,20 +3,22 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import CityMapCanvas from "@/app/[city]/map/CityMapCanvas";
-import { cities, dishes, restaurants } from "@/data/mock-data";
+import type { City, Dish, Restaurant } from "@/lib/types";
 
 const DEFAULT_CITY_SLUG = "pune";
 
-export default function OnePageMap() {
+type Props = { cities: City[]; restaurants: Restaurant[]; dishes: Dish[] };
+
+export default function OnePageMap({ cities, restaurants, dishes }: Props) {
   const [selectedCity, setSelectedCity] = useState(DEFAULT_CITY_SLUG);
 
   const activeCity = useMemo(() => {
     return cities.find((city) => city.slug === selectedCity) ?? cities[0];
-  }, [selectedCity]);
+  }, [cities, selectedCity]);
 
   const cityRestaurants = useMemo(() => {
     return restaurants.filter((restaurant) => restaurant.citySlug === activeCity.slug);
-  }, [activeCity.slug]);
+  }, [activeCity.slug, restaurants]);
 
   return (
     <main className="min-h-screen bg-[#05060a] px-4 py-8 text-white md:px-8">
