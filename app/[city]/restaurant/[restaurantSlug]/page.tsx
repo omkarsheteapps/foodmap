@@ -1,7 +1,8 @@
-import { dishes, restaurants } from "@/data/mock-data";
+import { getDishes, getRestaurants } from "@/lib/data";
 
 export default async function RestaurantPage({ params }: { params: Promise<{ city: string; restaurantSlug: string }> }) {
   const { city, restaurantSlug } = await params;
+  const [restaurants, dishes] = await Promise.all([getRestaurants(), getDishes()]);
   const restaurant = restaurants.find((r) => r.slug === restaurantSlug && r.citySlug === city);
   const menu = dishes.filter((d) => d.restaurantSlug === restaurantSlug);
   if (!restaurant) return <main className="p-8 text-white bg-black min-h-screen">Not found.</main>;

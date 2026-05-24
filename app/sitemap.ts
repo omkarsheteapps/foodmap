@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
-import { cities, restaurants } from "@/data/mock-data";
+import { getCities, getRestaurants } from "@/lib/data";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [cities, restaurants] = await Promise.all([getCities(), getRestaurants()]);
   const base = "https://cravemap.example.com";
   return [
     { url: base, lastModified: new Date() },

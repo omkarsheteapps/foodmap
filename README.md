@@ -99,6 +99,32 @@ To keep premium plan UX visible but checkout inactive, set:
 When ready to activate live/test checkout, switch to:
 - `NEXT_PUBLIC_ENABLE_PAYMENTS=true`
 
+
+## Load starter data into Supabase
+
+After running `db/migrations/001_init.sql`, run the seed script `db/seed.sql` in Supabase SQL Editor.
+
+Order:
+1. Open Supabase dashboard → **SQL Editor**
+2. Run `db/migrations/001_init.sql`
+3. Run `db/seed.sql`
+4. Verify rows exist in these tables:
+   - `cities`
+   - `restaurants`
+   - `signature_dishes`
+   - `categories`
+   - `restaurant_categories`
+
+Quick verify query:
+```sql
+select
+  (select count(*) from cities) as city_count,
+  (select count(*) from restaurants) as restaurant_count,
+  (select count(*) from signature_dishes) as dish_count;
+```
+
+If you use RLS, also add read policies for anon/authenticated users on those tables so the app can fetch data with `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
 ## Deployment (Vercel)
 
 1. Import repo in Vercel.
