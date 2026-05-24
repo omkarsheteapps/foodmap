@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { dishes, restaurants } from "@/data/mock-data";
+import { getDishes, getRestaurants } from "@/lib/data";
 import CityMapCanvas from "./CityMapCanvas";
 
 export async function generateMetadata({ params }: { params: Promise<{ city: string }> }): Promise<Metadata> {
@@ -15,6 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
 
 export default async function CityMapPage({ params }: { params: Promise<{ city: string }> }) {
   const { city } = await params;
+  const [restaurants, dishes] = await Promise.all([getRestaurants(), getDishes()]);
   const cityRestaurants = restaurants.filter((restaurant) => restaurant.citySlug === city);
 
   return (
